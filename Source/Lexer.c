@@ -1,7 +1,5 @@
+#include "Re/Colors.h"
 #include "Re/Lexer.h"
-
-#define red   "\033[31m"    // \033[1;31m
-#define reset "\033[0m"
 
 #define cur  com->cur
 #define file com->file
@@ -11,7 +9,13 @@
 #define getrow() com->row
 #define getcol() com->col
 
-#define max_buffer_length 16
+#define error(_message_) \
+{ \
+    printf("[%2d:%-2d ] "red"error:"reset" %s\n", getrow(), getcol(), _message_); \
+    exit(1); \
+}
+
+#define max_buffer_length 127
 #define cur_newline() if (cur == '\n') { com->row++; com->col = 1; }
 #define bufwrite(_string_) { strcpy(buffer, _string_); }
 #define print(_preprocessor_) { printf("[ %2d:%-2d ] %26s  #%-16s \n", getrow() - 1, getcol(), "Preprocessor", _preprocessor_); }
@@ -32,12 +36,19 @@
     return 1; \
 }
 
-#define error(_message_) \
+#define string() \
 { \
-    printf("[%2d:%-2d ] "red"lexical error:"reset" %s\n", getrow(), getcol(), _message_); \
-    exit(1); \
+    cur_getc(); \
+    while (cur != '"') \
+    { \
+        if (len >= max_buffer_length - 1) error("String too long"); \
+        buffer[len++] = cur; \
+        cur_newline(); \
+        cur_getc(); \
+    } \
+    buffer[len] = '\0'; \
+    token(Tk_Stringleaf); \
 }
-
 
 int next(Compiler* com, Token* tok)
 {
@@ -120,21 +131,28 @@ int next(Compiler* com, Token* tok)
         else
         if (isdigit(cur))
         {
+            bool isfloat = false;
             do
             {
                 if (len >= max_buffer_length - 1) error("Digit too long");
                 buffer[len++] = cur;
                 cur_getc();
+                if (cur == '.')
+                    if (!isfloat) isfloat = true;
+                    else error("(.) found more than once in Float leaf!")
             }
-            while (isdigit(cur));
+            while (isdigit(cur) || cur == '.');
+            cur_ungetc();
             buffer[len] = '\0';
-            token(Tk_IntLiteral)
+            token(isfloat ? Tk_Floatleaf : Tk_Intleaf)
         }
 
         else
         {
             switch (cur)
             {
+                case '"': string()
+
                 case '(': { bufwrite("(") token(Tk_OpenRoundBracket) }
                 case ')': { bufwrite(")") token(Tk_CloseRoundBracket) }
                 case '{': { bufwrite("{") token(Tk_OpenCurlyBracket) }
@@ -167,7 +185,6 @@ int next(Compiler* com, Token* tok)
                 default:
                     buffer[0] = cur;
                     buffer[1] = '\0';
-                    cur_getc();
                     token(Tk_Unknown)
             }
         }

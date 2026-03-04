@@ -11,10 +11,10 @@ enum TokenKind
     Tk_TypeName,
     Tk_Identifier,
 
-    // Literals
-    Tk_IntLiteral,
-    Tk_FloatLiteral,
-    Tk_StringLiteral,
+    // leafs
+    Tk_Intleaf,
+    Tk_Floatleaf,
+    Tk_Stringleaf,
 
     // Keywords
     Tk_Typedef,
@@ -85,88 +85,90 @@ enum TokenKind
     TOKENS_LENGTH
 };
 
+extern char* tokensMap[TOKENS_LENGTH];
+
 #ifdef RE_DEBUG
-char* tokenMap[TOKENS_LENGTH];
+char* tokensMap[TOKENS_LENGTH];
 void initTokens()
 {
     // Special tokens
-    tokenMap[Tk_Unknown] = "Tk_Unknown";
-    tokenMap[Tk_EOF] = "Tk_EOF";
+    tokensMap[Tk_Unknown] = "Tk_Unknown";
+    tokensMap[Tk_EOF] = "Tk_EOF";
 
     // User defined
-    tokenMap[Tk_TypeName] = "Tk_TypeName";
-    tokenMap[Tk_Identifier] = "Tk_Identifier";
+    tokensMap[Tk_TypeName] = "Tk_TypeName";
+    tokensMap[Tk_Identifier] = "Tk_Identifier";
 
-    // Literals
-    tokenMap[Tk_IntLiteral] = "Tk_IntLiteral";
-    tokenMap[Tk_FloatLiteral] = "Tk_FloatLiteral";
-    tokenMap[Tk_StringLiteral] = "Tk_StringLiteral";
+    // leafs
+    tokensMap[Tk_Intleaf] = "Tk_Intleaf";
+    tokensMap[Tk_Floatleaf] = "Tk_Floatleaf";
+    tokensMap[Tk_Stringleaf] = "Tk_Stringleaf";
 
     // Keywords
-    tokenMap[Tk_Typedef] = "Tk_Typedef";
-    tokenMap[Tk_Struct] = "Tk_Struct";
-    tokenMap[Tk_Return] = "Tk_Return";
-    tokenMap[Tk_Function] = "Tk_Function";
-    tokenMap[Tk_If] = "Tk_If";
-    tokenMap[Tk_Else] = "Tk_Else";
-    tokenMap[Tk_Break] = "Tk_Break";
-    tokenMap[Tk_Continue] = "Tk_Continue";
+    tokensMap[Tk_Typedef] = "Tk_Typedef";
+    tokensMap[Tk_Struct] = "Tk_Struct";
+    tokensMap[Tk_Return] = "Tk_Return";
+    tokensMap[Tk_Function] = "Tk_Function";
+    tokensMap[Tk_If] = "Tk_If";
+    tokensMap[Tk_Else] = "Tk_Else";
+    tokensMap[Tk_Break] = "Tk_Break";
+    tokensMap[Tk_Continue] = "Tk_Continue";
 
     // Operators
-    tokenMap[Tk_Equals] = "Tk_Equals";
-    tokenMap[Tk_Colon] = "Tk_Colon";
-    tokenMap[Tk_ColonColon] = "Tk_ColonColon";
-    tokenMap[Tk_BackTick] = "Tk_BackTick";
-    tokenMap[Tk_Period] = "Tk_Period";
-    tokenMap[Tk_Comma] = "Tk_Comma";
-    tokenMap[Tk_SemiColon] = "Tk_SemiColon";
-    tokenMap[Tk_DoubleBackSlash] = "Tk_DoubleBackSlash";
-    tokenMap[Tk_BackSlash] = "Tk_BackSlash";
-    tokenMap[Tk_QuestionMark] = "Tk_QuestionMark";
-    tokenMap[Tk_DoubleQuestionMark] = "Tk_DoubleQuestionMark";
-    tokenMap[Tk_AtSign] = "Tk_AtSign";
-    tokenMap[Tk_LeftArrow] = "Tk_LeftArrow";
-    tokenMap[Tk_RightArrow] = "Tk_RightArrow";
-    tokenMap[Tk_FatArrow] = "Tk_FatArrow";
+    tokensMap[Tk_Equals] = "Tk_Equals";
+    tokensMap[Tk_Colon] = "Tk_Colon";
+    tokensMap[Tk_ColonColon] = "Tk_ColonColon";
+    tokensMap[Tk_BackTick] = "Tk_BackTick";
+    tokensMap[Tk_Period] = "Tk_Period";
+    tokensMap[Tk_Comma] = "Tk_Comma";
+    tokensMap[Tk_SemiColon] = "Tk_SemiColon";
+    tokensMap[Tk_DoubleBackSlash] = "Tk_DoubleBackSlash";
+    tokensMap[Tk_BackSlash] = "Tk_BackSlash";
+    tokensMap[Tk_QuestionMark] = "Tk_QuestionMark";
+    tokensMap[Tk_DoubleQuestionMark] = "Tk_DoubleQuestionMark";
+    tokensMap[Tk_AtSign] = "Tk_AtSign";
+    tokensMap[Tk_LeftArrow] = "Tk_LeftArrow";
+    tokensMap[Tk_RightArrow] = "Tk_RightArrow";
+    tokensMap[Tk_FatArrow] = "Tk_FatArrow";
 
     // Arithmetic Operators
-    tokenMap[Tk_Asterisk] = "Tk_Asterisk";
-    tokenMap[Tk_NormalSlash] = "Tk_NormalSlash";
-    tokenMap[Tk_DoubleSlash] = "Tk_DoubleSlash";
-    tokenMap[Tk_Modulus] = "Tk_Modulus";
-    tokenMap[Tk_Plus] = "Tk_Plus";
-    tokenMap[Tk_Minus] = "Tk_Minus";
-    tokenMap[Tk_PlusPlus] = "Tk_PlusPlus";
-    tokenMap[Tk_MinusMinus] = "Tk_MinusMinus";
+    tokensMap[Tk_Asterisk] = "Tk_Asterisk";
+    tokensMap[Tk_NormalSlash] = "Tk_NormalSlash";
+    tokensMap[Tk_DoubleSlash] = "Tk_DoubleSlash";
+    tokensMap[Tk_Modulus] = "Tk_Modulus";
+    tokensMap[Tk_Plus] = "Tk_Plus";
+    tokensMap[Tk_Minus] = "Tk_Minus";
+    tokensMap[Tk_PlusPlus] = "Tk_PlusPlus";
+    tokensMap[Tk_MinusMinus] = "Tk_MinusMinus";
 
     // Comparison Operators
-    tokenMap[Tk_LessThan] = "Tk_LessThan";
-    tokenMap[Tk_GreaterThan] = "Tk_GreaterThan";
-    tokenMap[Tk_LessOrEquals] = "Tk_LessOrEquals";
-    tokenMap[Tk_GreaterOrEquals] = "Tk_GreaterOrEquals";
-    tokenMap[Tk_EqualsEquals] = "Tk_EqualsEquals";
-    tokenMap[Tk_ExclaimEquals] = "Tk_ExclaimEquals";
+    tokensMap[Tk_LessThan] = "Tk_LessThan";
+    tokensMap[Tk_GreaterThan] = "Tk_GreaterThan";
+    tokensMap[Tk_LessOrEquals] = "Tk_LessOrEquals";
+    tokensMap[Tk_GreaterOrEquals] = "Tk_GreaterOrEquals";
+    tokensMap[Tk_EqualsEquals] = "Tk_EqualsEquals";
+    tokensMap[Tk_ExclaimEquals] = "Tk_ExclaimEquals";
 
     // Bitwise Operators
-    tokenMap[Tk_Ambersand] = "Tk_Ambersand";
-    tokenMap[Tk_VerticalBar] = "Tk_VerticalBar";
-    tokenMap[Tk_Caret] = "Tk_Caret";
-    tokenMap[Tk_Tilde] = "Tk_Tilde";
-    tokenMap[Tk_LeftShift] = "Tk_LeftShift";
-    tokenMap[Tk_RightShift] = "Tk_RightShift";
+    tokensMap[Tk_Ambersand] = "Tk_Ambersand";
+    tokensMap[Tk_VerticalBar] = "Tk_VerticalBar";
+    tokensMap[Tk_Caret] = "Tk_Caret";
+    tokensMap[Tk_Tilde] = "Tk_Tilde";
+    tokensMap[Tk_LeftShift] = "Tk_LeftShift";
+    tokensMap[Tk_RightShift] = "Tk_RightShift";
 
     // Logical Operators
-    tokenMap[Tk_ExclamationMark] = "Tk_ExclamationMark";
-    tokenMap[Tk_DoubleVerticalBar] = "Tk_DoubleVerticalBar";
-    tokenMap[Tk_DoubleAmbersand] = "Tk_DoubleAmbersand";
+    tokensMap[Tk_ExclamationMark] = "Tk_ExclamationMark";
+    tokensMap[Tk_DoubleVerticalBar] = "Tk_DoubleVerticalBar";
+    tokensMap[Tk_DoubleAmbersand] = "Tk_DoubleAmbersand";
 
     // Punctuators / Brackets
-    tokenMap[Tk_OpenRoundBracket] = "Tk_OpenRoundBracket";
-    tokenMap[Tk_CloseRoundBracket] = "Tk_CloseRoundBracket";
-    tokenMap[Tk_OpenCurlyBracket] = "Tk_OpenCurlyBracket";
-    tokenMap[Tk_CloseCurlyBracket] = "Tk_CloseCurlyBracket";
-    tokenMap[Tk_OpenSquareBracket] = "Tk_OpenSquareBracket";
-    tokenMap[Tk_CloseSquareBracket] = "Tk_CloseSquareBracket";
+    tokensMap[Tk_OpenRoundBracket] = "Tk_OpenRoundBracket";
+    tokensMap[Tk_CloseRoundBracket] = "Tk_CloseRoundBracket";
+    tokensMap[Tk_OpenCurlyBracket] = "Tk_OpenCurlyBracket";
+    tokensMap[Tk_CloseCurlyBracket] = "Tk_CloseCurlyBracket";
+    tokensMap[Tk_OpenSquareBracket] = "Tk_OpenSquareBracket";
+    tokensMap[Tk_CloseSquareBracket] = "Tk_CloseSquareBracket";
 }
 #endif // RE_DEBUG
 #endif // TOKENKIND_H
