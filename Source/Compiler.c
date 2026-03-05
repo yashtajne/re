@@ -10,20 +10,12 @@
     printf("[ %2d:%-2d ] %26s  %-16s \n", _tok_.row, _tok_.col, tokensMap[_tok_.kind], _tok_.lexeme)
 
 
-#define free_expr(_expr_) \
-    if ((_expr_.kind == Expr_Int) || (_expr_.kind == Expr_Float)) \
-        free(expr.leaf.value); \
-    else \
-    if (_expr_.kind == Expr_Prefix) \
-        free(expr.prefix.expr);
-
-
 int main()
 {
 #ifdef RE_DEBUG
     initTokens();
     initExpressions();
-    initPrefixes();
+    initSymbols();
 #endif
 
     Compiler com;
@@ -46,7 +38,7 @@ int main()
     while (1)
     {
         expr = parse(&com, &tok);
-        print_expr(expr, 0);
+        print_expr(&expr, 0);
         // free_expr(expr);
 
         if (tok.kind == Tk_EOF) break;

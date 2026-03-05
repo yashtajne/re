@@ -1,89 +1,97 @@
-#include "Re/Colors.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "Re/Parser.h"
 #include "Re/Lexer.h"
 #include "Re/Expr.h"
 #include "Re/TokenKind.h"
 
-#define getrow() com->row
-#define getcol() com->col
-
-#define error(_message_) \
-{ \
-    printf("\n[ %2d:%-2d ] "red"parse error:"reset" %s\n", getrow(), getcol(), _message_); \
-    exit(1); \
-}
-
-#define token_in_range(_min_, _max_) \
-    (tok->kind >= _min_) && (tok->kind <= _max_)
-
-#define expression(_kind_) \
-{ \
-    expr.kind = _kind_; \
-    if (expr.kind == Expr_Int) { expr.leaf.value = strdup(tok->lexeme); } else \
-    if (expr.kind == Expr_Float) { expr.leaf.value = strdup(tok->lexeme); } \
-    return expr; \
-}
-
-enum PrefixKind token_to_prefix_kind(Token* tok) {
-    switch (tok->kind) {
-        case Tk_Plus:
-            return PK_Positive;
-        case Tk_Minus:
-            return PK_Negation;
-        case Tk_PlusPlus:
-            return PK_Increment;
-        case Tk_MinusMinus:
-            return PK_Decrement;
-        default:
-            return PK_Unknown;
+enum SymbolKind token_to_symbol_kind(Token* tok)
+{
+    switch (tok->kind)
+    {
+        case Tk_Plus: return SK_Positive;
+        case Tk_Minus: return SK_Negation;
+        case Tk_PlusPlus: return SK_Increment;
+        case Tk_MinusMinus: return SK_Decrement;
+        default: return SK_Unknown;
     }
 }
 
-#define print_tabs() { for (int i = 0; i < tab_size; i++) printf("  "); }
-void print_expr(Expr expr, int tab_size)
+void print_expr(Expr* expr, int tabs)
 {
-    print_tabs()
-    if (expr.kind == Expr_Prefix)
+    for (int i = 0; i < tabs; i++) printf("  ");
+
+    if (expr->kind == Expr_Symbolic)
     {
-        printf("\n[ %s ]\n", expressionsMap[expr.kind]);
+        printf("[ Expr_Symbolic ] %s\n",
+               symbolsMap[expr->sexpr.symbol][1]);
 
-        print_tabs()
-        printf("(%s '%s')\n", prefixesMap[expr.prefix.kind][0], prefixesMap[expr.prefix.kind][1]);
-
-        if (expr.prefix.expr != NULL) {
-            print_expr(*expr.prefix.expr, tab_size + 1);
-            printf("\n");
-        } else {
-            print_tabs()
-            printf("Error: Null expression in prefix!\n");
-        }
+        for (int i = 0; i < expr->sexpr.count; i++)
+            print_expr(expr->sexpr.operands[i], tabs + 1);
     }
     else
     {
-        print_tabs()
-        printf("[ %s ] -> %s\n", expressionsMap[expr.kind], expr.kind != Expr_Invalid ? expr.leaf.value : "(invalid)");
+        printf("[ %s ] -> %s\n",
+               expressionsMap[expr->kind],
+               expr->leaf.value);
     }
 }
-
 
 Expr parse(Compiler* com, Token* tok)
 {
-    Expr expr;
-    if ((tok->kind >= Tk_Plus) && (tok->kind <= Tk_MinusMinus))
+    Expr expr = {0};
+
+    if (tok->kind >= Tk_Plus && tok->kind <= Tk_MinusMinus)
     {
-    }
-    else
-    {
-        switch (tok->kind)
+        expr.kind = Expr_Symbolic;
+        expr.sexpr.symbol = token_to_symbol_kind(tok);
+        expr.sexpr.count = 0;
+
+        advance(com, tok);
+
+        for (int i = 0; i < 2; i++)
         {
-            case Tk_Intleaf: expr.kind = Expr_Int; break;
-            case Tk_Floatleaf: expr.kind = Expr_Float; break;
-            case Tk_Stringleaf: expr.kind = Expr_String; break;
-            case Tk_Identifier: expr.kind = Expr_Identifier; break;
-            default: expr.kind = Expr_Invalid; break;
+            Expr child = parse(com, tok);
+
+            if (child.kind == Expr_Invalid)
+                break;
+
+            Expr* node = malloc(sizeof(Expr));
+            *node = child;
+
+            expr.sexpr.operands[expr.sexpr.count++] = node;
         }
-        if (expr.kind != Expr_Invalid)
+
+        return expr;
+    }
+
+    switch (tok->kind)
+    {
+        case Tk_IntLiteral:
+            expr.kind = Expr_IntLeaf;
             expr.leaf.value = strdup(tok->lexeme);
+            break;
+
+        case Tk_FloatLiteral:
+            expr.kind = Expr_FloatLeaf;
+            expr.leaf.value = strdup(tok->lexeme);
+            break;
+
+        case Tk_StringLiteral:
+            expr.kind = Expr_StringLeaf;
+            expr.leaf.value = strdup(tok->lexeme);
+            break;
+
+        case Tk_Identifier:
+            expr.kind = Expr_Identifier;
+            expr.leaf.value = strdup(tok->lexeme);
+            break;
+
+        default:
+            expr.kind = Expr_Invalid;
+            break;
     }
 
     advance(com, tok);

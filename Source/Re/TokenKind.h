@@ -11,10 +11,10 @@ enum TokenKind
     Tk_TypeName,
     Tk_Identifier,
 
-    // leafs
-    Tk_Intleaf,
-    Tk_Floatleaf,
-    Tk_Stringleaf,
+    // Literals
+    Tk_IntLiteral,
+    Tk_FloatLiteral,
+    Tk_StringLiteral,
 
     // Keywords
     Tk_Typedef,
@@ -99,10 +99,10 @@ void initTokens()
     tokensMap[Tk_TypeName] = "Tk_TypeName";
     tokensMap[Tk_Identifier] = "Tk_Identifier";
 
-    // leafs
-    tokensMap[Tk_Intleaf] = "Tk_Intleaf";
-    tokensMap[Tk_Floatleaf] = "Tk_Floatleaf";
-    tokensMap[Tk_Stringleaf] = "Tk_Stringleaf";
+    // Literals
+    tokensMap[Tk_IntLiteral] = "Tk_IntLiteral";
+    tokensMap[Tk_FloatLiteral] = "Tk_FloatLiteral";
+    tokensMap[Tk_StringLiteral] = "Tk_StringLiteral";
 
     // Keywords
     tokensMap[Tk_Typedef] = "Tk_Typedef";

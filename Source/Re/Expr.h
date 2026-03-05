@@ -7,77 +7,75 @@ enum ExprKind {
     Expr_Invalid,
     Expr_Identifier,
 
-    Expr_Int,
-    Expr_Float,
-    Expr_String,
+    Expr_IntLeaf,
+    Expr_FloatLeaf,
+    Expr_StringLeaf,
 
-    Expr_Prefix,
-    Expr_Suffix,
+    Expr_Symbolic,
 
     EXPR_LENGTH
 };
 
-enum PrefixKind {
-    PK_Unknown,
+enum SymbolKind {
+    SK_Unknown,
 
     // Arithmetic
-    PK_Positive,
-    PK_Negation,
-    PK_Increment,
-    PK_Decrement,
+    SK_Positive,
+    SK_Negation,
+    SK_Increment,
+    SK_Decrement,
 
     // Logical
-    PK_LogicalNot,
+    SK_LogicalNot,
 
     // Bitwise
-    PK_BitwiseNot,
+    SK_BitwiseNot,
 
-    PREFIX_LENGTH
+    SYMBOL_LENGTH
 };
 
 extern char* expressionsMap[EXPR_LENGTH];
-extern char* prefixesMap[PREFIX_LENGTH][2];
+extern char* symbolsMap[SYMBOL_LENGTH][2];
 
 #ifdef RE_DEBUG
 char* expressionsMap[EXPR_LENGTH];
-char* prefixesMap[PREFIX_LENGTH][2];
+char* symbolsMap[SYMBOL_LENGTH][2];
 void initExpressions()
 {
     expressionsMap[Expr_Invalid] = "Expr_Invalid";
     expressionsMap[Expr_Identifier] = "Expr_Identifier";
 
-    expressionsMap[Expr_Int] = "Expr_Int";
-    expressionsMap[Expr_Float] = "Expr_Float";
-    expressionsMap[Expr_String] = "Expr_String";
+    expressionsMap[Expr_IntLeaf] = "Expr_IntLeaf";
+    expressionsMap[Expr_FloatLeaf] = "Expr_FloatLeaf";
+    expressionsMap[Expr_StringLeaf] = "Expr_StringLeaf";
 
-    expressionsMap[Expr_Prefix] = "Expr_Prefix";
-    expressionsMap[Expr_Suffix] = "Expr_Suffix";
+    expressionsMap[Expr_Symbolic] = "Expr_Symbolic";
 }
-void initPrefixes()
+void initSymbols()
 {
-    prefixesMap[PK_Unknown][0]     = "PK_Unknown";
-    prefixesMap[PK_Unknown][1]     = "Unknown";
+    symbolsMap[SK_Unknown][0]     = "PK_Unknown";
+    symbolsMap[SK_Unknown][1]     = "Unknown";
 
     // Arithmetic
-    prefixesMap[PK_Positive][0]    = "PK_Positive";
-    prefixesMap[PK_Positive][1]    = "+";
+    symbolsMap[SK_Positive][0]    = "PK_Positive";
+    symbolsMap[SK_Positive][1]    = "+";
 
-    prefixesMap[PK_Negation][0]    = "PK_Negation";
-    prefixesMap[PK_Negation][1]    = "-";
+    symbolsMap[SK_Negation][0]    = "PK_Negation";
+    symbolsMap[SK_Negation][1]    = "-";
 
-    prefixesMap[PK_Increment][0]   = "PK_Increment";
-    prefixesMap[PK_Increment][1]   = "++";
+    symbolsMap[SK_Increment][0]   = "PK_Increment";
+    symbolsMap[SK_Increment][1]   = "++";
 
-    prefixesMap[PK_Decrement][0]   = "PK_Decrement";
-    prefixesMap[PK_Decrement][1]   = "--";
+    symbolsMap[SK_Decrement][0]   = "PK_Decrement";
+    symbolsMap[SK_Decrement][1]   = "--";
 
     // Logical
-    prefixesMap[PK_LogicalNot][0]  = "PK_LogicalNot";
-    prefixesMap[PK_LogicalNot][1]  = "!";
+    symbolsMap[SK_LogicalNot][0]  = "PK_LogicalNot";
+    symbolsMap[SK_LogicalNot][1]  = "!";
 
     // Bitwise
-    prefixesMap[PK_BitwiseNot][0]  = "PK_BitwiseNot";
-    prefixesMap[PK_BitwiseNot][1]  = "~";
+    symbolsMap[SK_BitwiseNot][0]  = "PK_BitwiseNot";
+    symbolsMap[SK_BitwiseNot][1]  = "~";
 }
 #endif // RE_DEBUG
 
@@ -85,15 +83,16 @@ typedef struct _Expr Expr;
 typedef struct { char* value; } LeafExpr;
 
 typedef struct {
-    enum PrefixKind kind;
-    Expr* expr;
-} PrefixExpr;
+    enum SymbolKind symbol;
+    int count;
+    Expr* operands[2];
+} SymbolicExpr;
 
 struct _Expr {
     enum ExprKind kind;
     union {
         LeafExpr leaf;
-        PrefixExpr prefix;
+        SymbolicExpr sexpr;
     };
 };
 

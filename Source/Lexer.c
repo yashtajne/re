@@ -23,7 +23,7 @@
 #define peek(_dothis_) \
 { \
     int next = fgetc(file); \
-    _dothis_\
+    _dothis_ \
     ungetc(next, file); \
 }
 
@@ -49,7 +49,7 @@
         cur_getc(); \
     } \
     buffer[len] = '\0'; \
-    token(Tk_Stringleaf); \
+    token(Tk_StringLiteral); \
 }
 
 int next(Compiler* com, Token* tok)
@@ -62,7 +62,6 @@ int next(Compiler* com, Token* tok)
     while (1)
     {
         len = 0;
-        cur_getc();
 
         while (isspace(cur))
         {
@@ -145,12 +144,12 @@ int next(Compiler* com, Token* tok)
                 cur_getc();
                 if (cur == '.')
                     if (!isfloat) isfloat = true;
-                    else error("(.) found more than once in Float leaf!")
+                    else error("(.) found more than once in Float Literal!")
             }
             while (isdigit(cur) || cur == '.');
             cur_ungetc();
             buffer[len] = '\0';
-            token(isfloat ? Tk_Floatleaf : Tk_Intleaf)
+            token(isfloat ? Tk_FloatLiteral : Tk_IntLiteral)
         }
 
         else
