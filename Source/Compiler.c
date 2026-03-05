@@ -40,11 +40,11 @@ int main()
     rewind(com.file);
     printf("-END-\n\n");
 
+    advance(&com, &tok);
+
     int i;
     while (1)
     {
-        advance(&com, &tok);
-
         expr = parse(&com, &tok);
         print_expr(expr, 0);
         // free_expr(expr);

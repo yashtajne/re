@@ -29,10 +29,12 @@
 
 #define token(_kind_) \
 { \
+    memset(tok->lexeme, 0, sizeof(tok->lexeme)); \
     tok->kind = _kind_; \
     tok->row = getrow(); \
     tok->col = getcol(); \
-    strcpy(tok->lexeme, buffer); \
+    if ((tok->kind != Tk_Unknown) && (tok->kind != Tk_EOF)) \
+        strcpy(tok->lexeme, buffer); \
     return 1; \
 }
 
@@ -54,13 +56,13 @@ int next(Compiler* com, Token* tok)
 {
     int len;
     char buffer[max_buffer_length];
-    for (;;)
+
+    cur_getc();
+
+    while (1)
     {
         len = 0;
-        memset(buffer,0,sizeof(buffer));
-
         cur_getc();
-        if (cur == EOF) token(Tk_EOF);
 
         while (isspace(cur))
         {
@@ -68,6 +70,9 @@ int next(Compiler* com, Token* tok)
             cur_getc();
         }
 
+        if (cur == EOF) token(Tk_EOF)
+
+        else
         if (cur == '#')
         {
             cur_getc();
@@ -110,6 +115,7 @@ int next(Compiler* com, Token* tok)
             }
         }
 
+        else
         if (isalpha(cur) || cur == '_')
         {
             do

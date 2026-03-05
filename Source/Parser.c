@@ -68,36 +68,24 @@ void print_expr(Expr expr, int tab_size)
 
 Expr parse(Compiler* com, Token* tok)
 {
-    if (tok->kind == Tk_EOF) error("End of file...")
-
     Expr expr;
     if ((tok->kind >= Tk_Plus) && (tok->kind <= Tk_MinusMinus))
     {
-        expr.kind = Expr_Prefix;
-        expr.prefix.kind = token_to_prefix_kind(tok);
-
-        advance(com, tok);
-
-        expr.prefix.expr = malloc(sizeof(Expr));
-        if (!expr.prefix.expr) {
-            error("Malloc failed! parser.c");
-        }
-
-        *expr.prefix.expr = parse(com, tok);
-        return expr;
     }
     else
     {
         switch (tok->kind)
         {
-            case Tk_IntLiteral: expr.kind = Expr_Int; break;
-            case Tk_FloatLiteral: expr.kind = Expr_Float; break;
-            case Tk_StringLiteral: expr.kind = Expr_String; break;
+            case Tk_Intleaf: expr.kind = Expr_Int; break;
+            case Tk_Floatleaf: expr.kind = Expr_Float; break;
+            case Tk_Stringleaf: expr.kind = Expr_String; break;
             case Tk_Identifier: expr.kind = Expr_Identifier; break;
             default: expr.kind = Expr_Invalid; break;
         }
         if (expr.kind != Expr_Invalid)
             expr.leaf.value = strdup(tok->lexeme);
     }
+
+    advance(com, tok);
     return expr;
 }
