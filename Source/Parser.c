@@ -1,11 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include "Re/Colors.h"
 #include "Re/Parser.h"
 #include "Re/Lexer.h"
 #include "Re/Expr.h"
 #include "Re/TokenKind.h"
+
+#define alloc_expr(_expr_) Expr* _expr_ = malloc(sizeof(Expr));
+
+#define getrow() com->row
+#define getcol() com->col
+#define error(_message_, _args_) \
+{ \
+    printf("[%2d:%-2d ] "red"error: "reset _message_"\n", getrow(), getcol(), _args_); \
+    exit(1); \
+}
 
 enum SymbolKind token_to_symbol_kind(Token* tok)
 {
@@ -21,7 +28,7 @@ enum SymbolKind token_to_symbol_kind(Token* tok)
 
 void print_expr(Expr* expr, int tabs)
 {
-    for (int i = 0; i < tabs; i++) printf("  ");
+    for (int i = 1; i <= tabs; i++) printf("  ");
 
     if (expr->kind == Expr_Symbolic)
     {
@@ -39,61 +46,133 @@ void print_expr(Expr* expr, int tabs)
     }
 }
 
-Expr parse(Compiler* com, Token* tok)
+void print_stmt(Compiler* com, Stmt* stmt)
 {
-    Expr expr = {0};
+    if (stmt->kind == Stmt_UnitDeclaration)
+    {
+        printf("\n; Stmt_UnitDeclaration \n");
+        printf("  - Type %s\n", com->types[stmt->unit_decl.type]);
+        printf("  - Name %s\n", stmt->unit_decl.name);
+        print_expr(stmt->unit_decl.expr, 0);
+    }
+    else
+    if (stmt->kind == Stmt_Expression)
+    {
+        printf("\n; Stmt_Expression \n");
+        print_expr(stmt->expr_stmt.expr, 0);
+    }
+    else
+        printf("; Invalid Statement\n");
+}
 
+int is_type(Compiler* com, char* buffer, int* typeindex)
+{
+    for (int i = 0; i < com->types_len; i++)
+        if (0 == strcmp(com->types[i], buffer))
+        {
+            if (typeindex != NULL)
+                *typeindex = i;
+            return 1;
+        }
+    return 0;
+}
+
+int parse(Compiler* com, Token* tok, Stmt* stmt)
+{
+    switch (tok->kind)
+    {
+        case Tk_TypeName:
+            stmt->kind = Stmt_UnitDeclaration;
+            advance(com, tok);
+            is_type(com, tok->lexeme, &stmt->unit_decl.type);
+            if (tok->kind == Tk_Identifier)
+            {
+                stmt->unit_decl.name = strdup(tok->lexeme);
+                advance(com, tok);
+                alloc_expr(expr);
+                if (!parse_expr(com, tok, expr))
+                    break;
+                stmt->unit_decl.expr = expr;
+                return 1;
+            } else error("Expected an Identifier but got %s", tok->lexeme);
+            break;
+        default: {
+            stmt->kind = Stmt_Expression;
+            alloc_expr(expr);
+            if (!parse_expr(com, tok, expr)) {
+                free(expr);
+                break;
+            }
+            stmt->expr_stmt.expr = expr;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int parse_expr(Compiler* com, Token* tok, Expr* expr)
+{
+    if ((tok->kind == Tk_SemiColon) ||
+        (tok->kind == Tk_EOF))
+    {
+        advance(com, tok);
+        return 0;
+    }
+    else
     if (tok->kind >= Tk_Plus && tok->kind <= Tk_MinusMinus)
     {
-        expr.kind = Expr_Symbolic;
-        expr.sexpr.symbol = token_to_symbol_kind(tok);
-        expr.sexpr.count = 0;
+        expr->kind = Expr_Symbolic;
+        expr->sexpr.symbol = token_to_symbol_kind(tok);
+        expr->sexpr.count = 0;
 
         advance(com, tok);
 
         for (int i = 0; i < 2; i++)
         {
-            Expr child = parse(com, tok);
+            Expr child;
+
+            if (!parse_expr(com, tok, &child))
+                break;
 
             if (child.kind == Expr_Invalid)
-                break;
+                error("Expected a literal but got %s", tok->lexeme)
 
             Expr* node = malloc(sizeof(Expr));
             *node = child;
 
-            expr.sexpr.operands[expr.sexpr.count++] = node;
+            expr->sexpr.operands[expr->sexpr.count++] = node;
         }
 
-        return expr;
+        return 1;
     }
-
+    else
     switch (tok->kind)
     {
         case Tk_IntLiteral:
-            expr.kind = Expr_IntLeaf;
-            expr.leaf.value = strdup(tok->lexeme);
+            expr->kind = Expr_IntLeaf;
+            expr->leaf.value = strdup(tok->lexeme);
             break;
 
         case Tk_FloatLiteral:
-            expr.kind = Expr_FloatLeaf;
-            expr.leaf.value = strdup(tok->lexeme);
+            expr->kind = Expr_FloatLeaf;
+            expr->leaf.value = strdup(tok->lexeme);
             break;
 
         case Tk_StringLiteral:
-            expr.kind = Expr_StringLeaf;
-            expr.leaf.value = strdup(tok->lexeme);
+            expr->kind = Expr_StringLeaf;
+            expr->leaf.value = strdup(tok->lexeme);
             break;
 
         case Tk_Identifier:
-            expr.kind = Expr_Identifier;
-            expr.leaf.value = strdup(tok->lexeme);
+            expr->kind = Expr_Identifier;
+            expr->leaf.value = strdup(tok->lexeme);
             break;
 
         default:
-            expr.kind = Expr_Invalid;
-            break;
+            expr->kind = Expr_Invalid;
+            return 1;
     }
 
     advance(com, tok);
-    return expr;
+    return 1;
 }

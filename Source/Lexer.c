@@ -130,6 +130,7 @@ int next(Compiler* com, Token* tok)
 
             if (0==strcmp(buffer, "return")) token(Tk_Return) else
             if (0==strcmp(buffer, "if")) token(Tk_If) else
+            if (is_type(com, buffer, NULL)) token(Tk_TypeName)
             token(Tk_Identifier)
         }
 
@@ -157,6 +158,8 @@ int next(Compiler* com, Token* tok)
             switch (cur)
             {
                 case '"': string()
+
+                case '=': { bufwrite("=") token(Tk_Equals) }
 
                 case '(': { bufwrite("(") token(Tk_OpenRoundBracket) }
                 case ')': { bufwrite(")") token(Tk_CloseRoundBracket) }

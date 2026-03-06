@@ -79,7 +79,7 @@ void initSymbols()
 }
 #endif // RE_DEBUG
 
-typedef struct _Expr Expr;
+typedef struct _Expression Expr;
 typedef struct { char* value; } LeafExpr;
 
 typedef struct {
@@ -88,7 +88,7 @@ typedef struct {
     Expr* operands[2];
 } SymbolicExpr;
 
-struct _Expr {
+struct _Expression {
     enum ExprKind kind;
     union {
         LeafExpr leaf;
