@@ -30,6 +30,7 @@ int FreeCompiler(Compiler* com)
 {
     for (int i = 0; i < com->types_len; i++)
         free(com->types[i]);
+    return 1;
 }
 
 int AddType(Compiler* com, const char* name)
@@ -37,6 +38,14 @@ int AddType(Compiler* com, const char* name)
     char* typename = strdup(name);
     com->types[com->types_len] = typename;
     com->types_len++;
+    return 1;
+}
+
+int AddUnit(Compiler* com, const char* name)
+{
+    char* unitname = strdup(name);
+    com->units[com->units_len] = unitname;
+    com->units_len++;
     return 1;
 }
 
@@ -66,15 +75,15 @@ int main()
 
     advance(&com, &tok);
 
-    int i;
     while (1)
     {
         Stmt stmt;
-        parse(&com, &tok, &stmt);
+        if (!parse(&com, &tok, &stmt))
+        {
+            if (tok.kind == Tk_EOF) break;
+            continue;
+        }
         print_stmt(&com, &stmt);
-
-        if (tok.kind == Tk_EOF) break;
-        i++;
     }
 
     return 0;

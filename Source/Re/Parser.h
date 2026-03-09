@@ -6,6 +6,7 @@
 #include "Compiler.h"
 
 enum StatementKind {
+    Stmt_Invalid,
     Stmt_UnitDeclaration,
     Stmt_Expression,
 };

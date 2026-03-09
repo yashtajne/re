@@ -77,8 +77,24 @@ int is_type(Compiler* com, char* buffer, int* typeindex)
     return 0;
 }
 
+int is_unit(Compiler* com, char* buffer)
+{
+    for (int i = 0; i < com->units_len; i++)
+        if (0 == strcmp(com->units[i], buffer))
+            return 1;
+    return 0;
+}
+
 int parse(Compiler* com, Token* tok, Stmt* stmt)
 {
+    stmt->kind = Stmt_Invalid;
+
+    while (tok->kind == Tk_SemiColon)
+        advance(com, tok);
+
+    if (tok->kind == Tk_EOF)
+        return 0;
+
     switch (tok->kind)
     {
         case Tk_TypeName:
@@ -91,8 +107,16 @@ int parse(Compiler* com, Token* tok, Stmt* stmt)
                 advance(com, tok);
                 alloc_expr(expr);
                 if (!parse_expr(com, tok, expr))
-                    break;
+                    error("Expected an expression after declaration but got %s", tok->lexeme);
                 stmt->unit_decl.expr = expr;
+
+                if (is_unit(com, stmt->unit_decl.name))
+                { error("Redefinition of unit %s", stmt->unit_decl.name); }
+                else
+                    AddUnit(com, stmt->unit_decl.name);
+
+                while (tok->kind == Tk_SemiColon)
+                    advance(com, tok);
                 return 1;
             } else error("Expected an Identifier but got %s", tok->lexeme);
             break;
@@ -104,6 +128,9 @@ int parse(Compiler* com, Token* tok, Stmt* stmt)
                 break;
             }
             stmt->expr_stmt.expr = expr;
+
+            while (tok->kind == Tk_SemiColon)
+                advance(com, tok);
             return 1;
         }
     }
@@ -115,7 +142,6 @@ int parse_expr(Compiler* com, Token* tok, Expr* expr)
     if ((tok->kind == Tk_SemiColon) ||
         (tok->kind == Tk_EOF))
     {
-        advance(com, tok);
         return 0;
     }
     else
