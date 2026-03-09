@@ -89,7 +89,6 @@ int next(Compiler* com, Token* tok)
                 if (0 == strcmp(buffer, "if")) print("if") else
                 if (0 == strcmp(buffer, "end")) print("end") else
                 error("Invalid Preprocessor!? Or you may have forgot to put a space for comment.")
-                continue;
             }
             else
             if (isspace(cur))
@@ -130,6 +129,7 @@ int next(Compiler* com, Token* tok)
 
             if (0==strcmp(buffer, "return")) token(Tk_Return) else
             if (0==strcmp(buffer, "if")) token(Tk_If) else
+            if (0==strcmp(buffer, "else")) token(Tk_Else) else
             if (is_type(com, buffer, NULL)) token(Tk_TypeName)
             token(Tk_Identifier)
         }
@@ -159,7 +159,26 @@ int next(Compiler* com, Token* tok)
             {
                 case '"': string()
 
-                case '=': { bufwrite("=") token(Tk_Equals) }
+                case '=':
+                {
+                    peek(if (next == '=') { bufwrite("==") token(Tk_EqualsEquals) })
+                    bufwrite("=") token(Tk_Equals)
+                }
+                case '!':
+                {
+                    peek(if (next == '=') { bufwrite("!=") token(Tk_ExclaimEquals) })
+                    bufwrite("!") token(Tk_ExclamationMark)
+                }
+                case '<':
+                {
+                    peek(if (next == '=') { bufwrite("<=") token(Tk_LessOrEquals) })
+                    bufwrite("<") token(Tk_LessThan)
+                }
+                case '>':
+                {
+                    peek(if (next == '=') { bufwrite(">=") token(Tk_GreaterOrEquals) })
+                    bufwrite(">") token(Tk_GreaterThan)
+                }
 
                 case '(': { bufwrite("(") token(Tk_OpenRoundBracket) }
                 case ')': { bufwrite(")") token(Tk_CloseRoundBracket) }
@@ -188,6 +207,16 @@ int next(Compiler* com, Token* tok)
                 {
                     peek(if (next == '/') { bufwrite("//") token(Tk_DoubleSlash) })
                     bufwrite("/") token(Tk_NormalSlash)
+                }
+                case '&':
+                {
+                    peek(if (next == '&') { bufwrite("&&") token(Tk_DoubleAmbersand) })
+                    bufwrite("&") token(Tk_Ambersand)
+                }
+                case '|':
+                {
+                    peek(if (next == '|') { bufwrite("||") token(Tk_DoubleVerticalBar) })
+                    bufwrite("|") token(Tk_VerticalBar)
                 }
 
                 default:
