@@ -41,6 +41,11 @@ pub fn next(compiler: &mut Compiler) -> Token {
             };
 
             compiler.file.consume(len);
+
+            if compiler.types.contains(&lexeme) {
+                return Token::TypeName(lexeme);
+            }
+
             return Token::Identifier(lexeme);
         }
 

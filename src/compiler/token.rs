@@ -10,6 +10,7 @@ pub enum Token {
     DoublePlus,
     DoubleMinus,
 
+    TypeName(String),
     Identifier(String),
 }
 
@@ -26,6 +27,7 @@ impl Token {
             Token::DoublePlus => print!("DoublePlus ++"),
             Token::DoubleMinus => print!("DoubleMinus --"),
 
+            Token::TypeName(s) => print!("TypeName `{}`", s),
             Token::Identifier(s) => print!("Identifier `{}`", s),
             // _ => todo!("Implement token printing! for other tokens")
         }

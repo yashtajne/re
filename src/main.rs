@@ -14,5 +14,6 @@ fn main() {
         None => panic!("Error: file not found")
     };
 
-    Compiler::compile(file);
+    let mut compiler = Compiler::create(file);
+    compiler.compile();
 }
