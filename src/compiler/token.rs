@@ -1,34 +1,43 @@
+use crate::compiler::parser::{Literal, Symbol};
 
 
 pub enum Token {
     Eof,
     Invalid,
 
-    Plus,
-    Minus,
+    SemiColon,
 
-    DoublePlus,
-    DoubleMinus,
+    Symbol(Symbol),
+    Literal(Literal),
 
     TypeName(String),
     Identifier(String),
 }
 
-
+#[allow(dead_code)]
 impl Token {
     pub fn print(&self) {
         match self {
-            Token::Invalid => print!("Invalid"),
-            Token::Eof => print!("End Of File"),
+            Token::Invalid => print!("Token -> Invalid"),
+            Token::Eof => print!("Token -> End Of File"),
 
-            Token::Plus => print!("Plus +"),
-            Token::Minus => print!("Minus -"),
+            Token::SemiColon => print!("Token -> SemiColon: ;"),
 
-            Token::DoublePlus => print!("DoublePlus ++"),
-            Token::DoubleMinus => print!("DoubleMinus --"),
+            Token::Symbol(s) => match s {
+                Symbol::Plus => print!("Token -> Symbol -> Plus: +"),
+                Symbol::Minus => print!("Token -> Symbol -> Minus: -"),
+                Symbol::DoublePlus => print!("Token -> Symbol -> DoublePlus: ++"),
+                Symbol::DoubleMinus => print!("Token -> Symbol -> DoubleMinus: --"),
+                Symbol::Invalid => print!("Token -> Symbol -> Invalid")
+            }
 
-            Token::TypeName(s) => print!("TypeName `{}`", s),
-            Token::Identifier(s) => print!("Identifier `{}`", s),
+            Token::Literal(l) => match l {
+                Literal::String(ls) => print!("Token -> Literal -> String: \"{}\"", ls),
+                Literal::Invalid => print!("Token -> Literal -> Invalid")
+            }
+
+            Token::TypeName(s) => print!("Token -> TypeName: `{}`", s),
+            Token::Identifier(s) => print!("Token -> Identifier: `{}`", s),
             // _ => todo!("Implement token printing! for other tokens")
         }
     }
