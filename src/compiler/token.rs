@@ -1,44 +1,41 @@
-use crate::compiler::parser::{Literal, Symbol};
 
-
+#[derive(Debug, Clone)]
 pub enum Token {
     Eof,
     Invalid,
 
     SemiColon,
 
-    Symbol(Symbol),
-    Literal(Literal),
+    Plus,
+    Minus,
+
+    OpenRoundBracket,
+    CloseRoundBracket,
+
+    StringLiteral(String),
+    // IntLiteral,
+    // FloatLiteral,
 
     TypeName(String),
     Identifier(String),
 }
 
-#[allow(dead_code)]
 impl Token {
     pub fn print(&self) {
-        match self {
-            Token::Invalid => print!("Token -> Invalid"),
-            Token::Eof => print!("Token -> End Of File"),
-
-            Token::SemiColon => print!("Token -> SemiColon: ;"),
-
-            Token::Symbol(s) => match s {
-                Symbol::Plus => print!("Token -> Symbol -> Plus: +"),
-                Symbol::Minus => print!("Token -> Symbol -> Minus: -"),
-                Symbol::DoublePlus => print!("Token -> Symbol -> DoublePlus: ++"),
-                Symbol::DoubleMinus => print!("Token -> Symbol -> DoubleMinus: --"),
-                Symbol::Invalid => print!("Token -> Symbol -> Invalid")
+        print!(
+            "{}",
+            match self {
+                Token::Invalid => format!("{:<20}", "Invalid"),
+                Token::Eof => format!("{:<20}", "Eof"),
+                Token::SemiColon => format!("{:<20} {}", "SemiColon", ";"),
+                Token::Plus => format!("{:<20} {}", "Plus", "+"),
+                Token::Minus => format!("{:<20} {}", "Minus", "-"),
+                Token::OpenRoundBracket => format!("{:<20} {}", "OpenRoundBracket", "("),
+                Token::CloseRoundBracket => format!("{:<20} {}", "CloseRoundBracket", ")"),
+                Token::StringLiteral(s) => format!("{:<20} {}", "StringLiteral", s),
+                Token::TypeName(t) => format!("{:<20} {}", "TypeName", t),
+                Token::Identifier(i) => format!("{:<20} {}", "Identifier", i),
             }
-
-            Token::Literal(l) => match l {
-                Literal::String(ls) => print!("Token -> Literal -> String: \"{}\"", ls),
-                Literal::Invalid => print!("Token -> Literal -> Invalid")
-            }
-
-            Token::TypeName(s) => print!("Token -> TypeName: `{}`", s),
-            Token::Identifier(s) => print!("Token -> Identifier: `{}`", s),
-            // _ => todo!("Implement token printing! for other tokens")
-        }
+        );
     }
 }
