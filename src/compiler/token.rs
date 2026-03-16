@@ -13,7 +13,7 @@ pub enum Token {
     CloseRoundBracket,
 
     StringLiteral(String),
-    // IntLiteral,
+    IntLiteral(i64),
     // FloatLiteral,
 
     TypeName(String),
@@ -33,6 +33,7 @@ impl Token {
                 Token::OpenRoundBracket => format!("{:<20} {}", "OpenRoundBracket", "("),
                 Token::CloseRoundBracket => format!("{:<20} {}", "CloseRoundBracket", ")"),
                 Token::StringLiteral(s) => format!("{:<20} {}", "StringLiteral", s),
+                Token::IntLiteral(s) => format!("{:<20} {}", "IntLiteral", s),
                 Token::TypeName(t) => format!("{:<20} {}", "TypeName", t),
                 Token::Identifier(i) => format!("{:<20} {}", "Identifier", i),
             }

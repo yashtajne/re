@@ -111,6 +111,7 @@ impl Compiler {
 
         let expr = match &self.current_token {
             Token::StringLiteral(s) => Expr::StringLiteral(s.clone()),
+            Token::IntLiteral(i) => Expr::IntLiteral(i.clone()),
             Token::Identifier(i) => Expr::Identifier(i.clone()),
             _ => Expr::Invalid
         };

@@ -1,4 +1,4 @@
-use crate::compiler::token::{self, Token};
+use crate::compiler::token::{Token};
 
 #[derive(Debug)]
 pub enum Expr {
@@ -10,6 +10,8 @@ pub enum Expr {
     },
 
     Identifier(String),
+
+    IntLiteral(i64),
     StringLiteral(String),
 }
 
@@ -20,17 +22,23 @@ impl Expr {
             Self::Invalid => print!("- Expr Invalid"),
 
             Self::Identifier(l) => {
-                println!("- Expr Identifier");
+                println!("[Expr Identifier]");
                 println!("{:#?}\n", l);
             },
+
+            Self::IntLiteral(i) => {
+                println!("[Expr IntLiteral]");
+                println!("{:#?}\n", i);
+            },
+
             Self::StringLiteral(s) => {
-                println!("- Expr StringLiteral");
+                println!("[Expr StringLiteral]");
                 println!("{:#?}\n", s);
             },
 
             s @ Self::Symbolic { .. } => {
-                println!("- Expr Symbolic");
-                println!("{:#?}", s)
+                println!("[Expr Symbolic]");
+                println!("{:#?}", s);
             }
         }
     }

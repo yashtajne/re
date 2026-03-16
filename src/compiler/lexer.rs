@@ -61,12 +61,33 @@ pub fn next(compiler: &mut Compiler) -> Token {
     }
 
     else
+    if character.is_digit(10) {
+        let buffer = compiler.file.fill_buf()
+            .expect("Error while fill_buf() in character.is_digit()");
+        let mut length = 0;
+
+        while length < buffer.len() &&
+        ((buffer[length] as char).is_digit(10)) {
+            length += 1;
+        }
+
+        let lexeme = String::from_utf8_lossy(&buffer[..length]).to_string();
+        compiler.file.consume(length);
+
+        let int = lexeme.parse::<i64>()
+            .expect("Error while typecasting to int in character.is_digit()");
+
+        return Token::IntLiteral(int);
+    }
+
+    else
     if character == '"' {
         let buffer = compiler.file.fill_buf()
             .expect("Error while fill_buf() in character == '\"'");
         let mut length = 1;
 
-        while length < buffer.len() && ((buffer[length] as char) != '"') {
+        while length < buffer.len() &&
+        ((buffer[length] as char) != '"') {
             length += 1;
         }
 
