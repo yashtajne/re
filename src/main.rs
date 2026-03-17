@@ -14,6 +14,16 @@ fn main() {
         None => panic!("Error: file not found")
     };
 
-    let mut compiler = Compiler::create(file);
+    let mut compiler = Compiler::create_for_file(file);
+    println!();
+    println!("- - - - - [ Tokenization ] - - - - - -");
+    println!();
+
+    Compiler::list_all_tokens(file);
+
+    println!();
+    println!("- - - - - [ Parsing ] - - - - - -");
+    println!();
+
     compiler.compile();
 }

@@ -4,7 +4,7 @@ use crate::compiler::Compiler;
 
 
 impl Compiler {
-    pub fn next(&mut self) -> Token {
+    pub fn next(&mut self) {
         let start_pos = self.file.stream_position()
             .expect("Failed to get stream_position before lexing") as usize;
 
@@ -13,7 +13,8 @@ impl Compiler {
                 .expect("Error while fill_buf()");
 
             if buffer.is_empty() {
-                return Token::Eof;
+                self.current_token = Token::Eof{ row: 0, col: 0 };
+                return
             }
 
             let mut consumed = 0;
@@ -44,7 +45,8 @@ impl Compiler {
         }
 
         if reached_eof {
-            return Token::Eof;
+            self.current_token = Token::Eof{ row: self.row, col: 0 };
+            return
         }
 
         if character == '#' {
@@ -80,18 +82,21 @@ impl Compiler {
             let mut length = 0;
 
             while length < buffer.len() &&
-            (buffer[length] as char).is_alphanumeric() || character == '_' {
+            (((buffer[length] as char).is_alphanumeric()) || (buffer[length] as char) == '_') {
                 length += 1;
             }
 
             let lexeme = String::from_utf8_lossy(&buffer[..length]).to_string();
             self.file.consume(length);
 
+            let (row, col) = self.get_current_position();
             if self.types.contains(&lexeme) {
-                return Token::TypeName(lexeme);
+                self.current_token = Token::TypeName{ row, col, value: lexeme };
+                return
+            } else {
+                self.current_token = Token::Identifier{ row, col: 0, value: lexeme };
+                return
             }
-
-            return Token::Identifier(lexeme);
         }
 
         else
@@ -111,7 +116,9 @@ impl Compiler {
             let int = lexeme.parse::<i64>()
                 .expect("Error while typecasting to int in character.is_digit()");
 
-            return Token::IntLiteral(int);
+            let (row, col) = self.get_current_position();
+            self.current_token = Token::IntLiteral{ row, col, value: int };
+            return
         }
 
         else
@@ -130,22 +137,26 @@ impl Compiler {
             let lexeme = String::from_utf8_lossy(&buffer[..length]).to_string();
             self.file.consume(length);
 
-            return Token::StringLiteral(lexeme);
+            let (row, col) = self.get_current_position();
+            self.current_token = Token::StringLiteral{ row, col, value: lexeme };
+            return
         }
 
+        let (row, col) = self.get_current_position();
         let token = match character {
-            ';' => Token::SemiColon,
+            ';' => Token::SemiColon{ row, col },
 
-            '(' => Token::OpenRoundBracket,
-            ')' => Token::CloseRoundBracket,
+            '(' => Token::OpenRoundBracket{ row, col },
+            ')' => Token::CloseRoundBracket{ row, col },
 
-            '+' => Token::Plus,
-            '-' => Token::Minus,
+            '+' => Token::Plus{ row, col },
+            '-' => Token::Minus{ row, col },
 
-            _ => Token::Invalid
+            _ => Token::Invalid{ row, col }
         };
 
         self.file.consume(1);
-        token
+        self.current_token = token;
+        return
     }
 }

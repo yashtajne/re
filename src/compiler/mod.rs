@@ -15,7 +15,7 @@ pub struct Compiler {
 }
 
 impl Compiler {
-    pub fn create(file: &str) -> Self {
+    pub fn create_for_file(file: &str) -> Self {
         let open_file = File::open(file);
         let file = match open_file {
             Ok(f) => BufReader::new(f),
@@ -24,24 +24,24 @@ impl Compiler {
 
         let mut compiler = Self{
             row: 1, bol: 0,
-            current_token: Token::Invalid,
+            current_token: Token::Invalid{ row: 0, col: 0 },
             file: file, types: vec!["int".to_string()]
         };
 
-        compiler.current_token = compiler.next();
+        compiler.next();
         compiler
     }
 
-    fn reset(&mut self) {
-        self.row = 1;
-        self.bol = 0;
+    pub fn list_all_tokens(file: &str) {
+        let mut compiler = Self::create_for_file(file);
 
-        self.file.rewind().unwrap_or_else(|e| {
-            panic!("Error: Unable to rewind BufReader.. Because {}", e)
-        });
-
-        self.types.clear();
-        self.current_token = self.next();
+        while !matches!(compiler.current_token, Token::Eof{..} | Token::Invalid{..}) {
+            let current_position = compiler.get_current_position();
+            print!("[{}:{}]", current_position.0, current_position.1);
+            compiler.current_token.print();
+            println!();
+            compiler.next();
+        }
     }
 
     pub fn get_current_position(&mut self) -> (usize, usize) {
@@ -49,24 +49,6 @@ impl Compiler {
     }
 
     pub fn compile(&mut self) {
-        println!();
-        println!("- - - - - [ Tokenization ] - - - - - -");
-        println!();
-
-        while !matches!(self.current_token, Token::Eof) {
-            let current_position = self.get_current_position();
-            print!("[{:>2}:{:<3}] ", current_position.0, current_position.1);
-            self.current_token.print();
-            println!();
-
-            self.current_token = self.next();
-        }
-        self.reset();
-
-        println!();
-        println!("- - - - - [ Parsing ] - - - - - -");
-        println!();
-
         let mut expr = self.parse_expr();
         while !matches!(expr, Expr::Invalid) {
             expr.print();

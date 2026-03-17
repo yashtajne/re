@@ -48,40 +48,42 @@ impl Expr {
 
 
 impl Compiler {
-    fn advance(&mut self) {
-        let next_token = self.next();
-        self.current_token = next_token;
-    }
-
     pub fn parse_expr(&mut self) -> Expr {
-        if let Token::OpenRoundBracket = self.current_token {
+        if let Token::CloseRoundBracket{..} = self.current_token {
+            let position = self.get_current_position();
+            self.error(format!(
+                "Unnessesary close round bracket found here! [{}:{}]",
+                position.0, position.1
+            ));
+        }
+
+        if let Token::OpenRoundBracket{..} = self.current_token {
             let opened_position = self.get_current_position();
 
-            self.advance();
+            self.next();
             let expr = self.parse_expr();
 
-            if !matches!(self.current_token, Token::CloseRoundBracket) {
-
-                self.error(format!("Error: forgot to close round bracket? Opened at [{}:{}]", opened_position.0, opened_position.1));
+            if !matches!(self.current_token, Token::CloseRoundBracket{..}) {
+                self.error(format!("forgot to close round bracket? Opened at [{}:{}]", opened_position.0, opened_position.1));
             }
 
-            self.advance();
+            self.next();
             return expr;
         }
 
         if matches!(&self.current_token,
-            Token::Plus |
-            Token::Minus
+            Token::Plus{..} |
+            Token::Minus{..}
         ) {
             let symbol = self.current_token.clone();
             let mut operands = Vec::new();
 
-            self.advance();
+            self.next();
 
             while !matches!(self.current_token,
-                Token::CloseRoundBracket |
-                Token::SemiColon |
-                Token::Eof
+                Token::CloseRoundBracket{..} |
+                Token::SemiColon{..} |
+                Token::Eof{..}
             ) {
                 operands.push(self.parse_expr());
             }
@@ -90,13 +92,13 @@ impl Compiler {
         }
 
         let expr = match &self.current_token {
-            Token::StringLiteral(s) => Expr::StringLiteral(s.clone()),
-            Token::IntLiteral(i) => Expr::IntLiteral(i.clone()),
-            Token::Identifier(i) => Expr::Identifier(i.clone()),
+            Token::StringLiteral { value, .. } => Expr::StringLiteral(value.clone()),
+            Token::IntLiteral { value, .. } => Expr::IntLiteral(value.clone()),
+            Token::Identifier { value, .. } => Expr::Identifier(value.clone()),
             _ => Expr::Invalid
         };
 
-        self.advance();
+        self.next();
         expr
     }
 }
