@@ -1,6 +1,7 @@
 pub mod token;
 pub mod lexer;
 pub mod parser;
+pub mod errors;
 
 use crate::compiler::{parser::Expr, token::Token};
 use std::{fs::File, io::{BufReader, Seek}};
@@ -43,7 +44,7 @@ impl Compiler {
         self.current_token = self.next();
     }
 
-    fn get_current_position(&mut self) -> (usize, usize) {
+    pub fn get_current_position(&mut self) -> (usize, usize) {
         (self.row, (self.file.stream_position().unwrap() as usize) - self.bol + 1)
     }
 

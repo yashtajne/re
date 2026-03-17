@@ -1,4 +1,6 @@
-use crate::compiler::{Compiler, lexer, token::Token};
+use std::fmt::format;
+
+use crate::compiler::{Compiler, token::Token};
 
 #[derive(Debug)]
 pub enum Expr {
@@ -53,8 +55,18 @@ impl Compiler {
 
     pub fn parse_expr(&mut self) -> Expr {
         if let Token::OpenRoundBracket = self.current_token {
+            let opened_position = self.get_current_position();
+
             self.advance();
-            return self.parse_expr()
+            let expr = self.parse_expr();
+
+            if !matches!(self.current_token, Token::CloseRoundBracket) {
+
+                self.error(format!("Error: forgot to close round bracket? Opened at [{}:{}]", opened_position.0, opened_position.1));
+            }
+
+            self.advance();
+            return expr;
         }
 
         if matches!(&self.current_token,
@@ -73,8 +85,6 @@ impl Compiler {
             ) {
                 operands.push(self.parse_expr());
             }
-
-            self.advance();
 
             return Expr::Symbolic { symbol, operands };
         }
