@@ -27,7 +27,7 @@ impl Compiler {
             file: file, types: vec!["int".to_string()]
         };
 
-        compiler.current_token = lexer::next(&mut compiler);
+        compiler.current_token = compiler.next();
         compiler
     }
 
@@ -40,7 +40,7 @@ impl Compiler {
         });
 
         self.types.clear();
-        self.current_token = lexer::next(self);
+        self.current_token = self.next();
     }
 
     fn get_current_position(&mut self) -> (usize, usize) {
@@ -58,7 +58,7 @@ impl Compiler {
             self.current_token.print();
             println!();
 
-            self.current_token = lexer::next(self);
+            self.current_token = self.next();
         }
         self.reset();
 
@@ -73,50 +73,5 @@ impl Compiler {
         }
 
         println!();
-    }
-
-    fn advance(&mut self) {
-        let next_token = lexer::next(self);
-        self.current_token = next_token;
-    }
-
-    fn parse_expr(&mut self) -> parser::Expr {
-
-        if let Token::OpenRoundBracket = self.current_token {
-            self.advance();
-            return self.parse_expr()
-        }
-
-        if matches!(&self.current_token,
-            Token::Plus |
-            Token::Minus
-        ) {
-            let symbol = self.current_token.clone();
-            let mut operands = Vec::new();
-
-            self.advance();
-
-            while !matches!(self.current_token,
-                Token::CloseRoundBracket |
-                Token::SemiColon |
-                Token::Eof
-            ) {
-                operands.push(self.parse_expr());
-            }
-
-            self.advance();
-
-            return Expr::Symbolic { symbol, operands };
-        }
-
-        let expr = match &self.current_token {
-            Token::StringLiteral(s) => Expr::StringLiteral(s.clone()),
-            Token::IntLiteral(i) => Expr::IntLiteral(i.clone()),
-            Token::Identifier(i) => Expr::Identifier(i.clone()),
-            _ => Expr::Invalid
-        };
-
-        self.advance();
-        expr
     }
 }

@@ -1,4 +1,4 @@
-use crate::compiler::token::{Token};
+use crate::compiler::{Compiler, lexer, token::Token};
 
 #[derive(Debug)]
 pub enum Expr {
@@ -41,5 +41,52 @@ impl Expr {
                 println!("{:#?}", s);
             }
         }
+    }
+}
+
+
+impl Compiler {
+    fn advance(&mut self) {
+        let next_token = self.next();
+        self.current_token = next_token;
+    }
+
+    pub fn parse_expr(&mut self) -> Expr {
+        if let Token::OpenRoundBracket = self.current_token {
+            self.advance();
+            return self.parse_expr()
+        }
+
+        if matches!(&self.current_token,
+            Token::Plus |
+            Token::Minus
+        ) {
+            let symbol = self.current_token.clone();
+            let mut operands = Vec::new();
+
+            self.advance();
+
+            while !matches!(self.current_token,
+                Token::CloseRoundBracket |
+                Token::SemiColon |
+                Token::Eof
+            ) {
+                operands.push(self.parse_expr());
+            }
+
+            self.advance();
+
+            return Expr::Symbolic { symbol, operands };
+        }
+
+        let expr = match &self.current_token {
+            Token::StringLiteral(s) => Expr::StringLiteral(s.clone()),
+            Token::IntLiteral(i) => Expr::IntLiteral(i.clone()),
+            Token::Identifier(i) => Expr::Identifier(i.clone()),
+            _ => Expr::Invalid
+        };
+
+        self.advance();
+        expr
     }
 }
