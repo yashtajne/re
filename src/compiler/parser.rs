@@ -82,7 +82,6 @@ impl Compiler {
 
             while !matches!(self.current_token,
                 Token::CloseRoundBracket{..} |
-                Token::SemiColon{..} |
                 Token::Eof{..}
             ) {
                 operands.push(self.parse_expr());

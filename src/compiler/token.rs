@@ -23,6 +23,6 @@ pub enum Token {
 
 impl Token {
     pub fn print(&self) {
-        println!("{:#?}", self);
+        println!("{:?}", self);
     }
 }
