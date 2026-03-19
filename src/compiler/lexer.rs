@@ -1,9 +1,9 @@
-use std::io::{Read, Seek};
+use std::io::{BufRead, Seek};
 use crate::compiler::token::{Token};
 use crate::compiler::Compiler;
 
 
-impl Compiler {
+impl<R: BufRead + Seek> Compiler<R> {
     fn read_character(&mut self) -> Option<char> {
         let mut buffer = [0u8; 1];
 

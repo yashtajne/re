@@ -4,10 +4,11 @@ pub mod parser;
 pub mod errors;
 
 use crate::compiler::{parser::Expr, token::Token};
-use std::{fs::File, io::{BufReader, Seek}};
+use std::{fs::File, io::{self, BufRead, BufReader, Cursor, Read, Seek, Write}};
 
-pub struct Compiler {
-    file: BufReader<File>,
+
+pub struct Compiler<R: BufRead + Read> {
+    file: R,
     row: usize,
     bol: usize,
     peeked: Option<char>,
@@ -15,14 +16,9 @@ pub struct Compiler {
     types: Vec<String>,
 }
 
-impl Compiler {
-    pub fn create_for_file(file: &str) -> Self {
-        let open_file = File::open(file);
-        let file = match open_file {
-            Ok(f) => BufReader::new(f),
-            Err(e) => panic!("Error: {}", e),
-        };
 
+impl<R: BufRead + Seek> Compiler<R> {
+    pub fn create(file: R) -> Self {
         let mut compiler = Self{
             row: 1, bol: 0,
             peeked: None,
@@ -32,6 +28,16 @@ impl Compiler {
 
         compiler.next();
         compiler
+    }
+
+    pub fn create_for_file(file: &str) -> Compiler<BufReader<File>> {
+        let open_file = File::open(file);
+        let file = match open_file {
+            Ok(f) => f,
+            Err(e) => panic!("Error: {}", e),
+        };
+
+        Compiler::create(BufReader::new(file))
     }
 
     pub fn list_all_tokens(file: &str) {
@@ -61,5 +67,35 @@ impl Compiler {
         }
 
         println!();
+    }
+
+    pub fn shell() {
+        let mut input = String::new();
+        let mut row = 0;
+        // let mut compiler = Compiler::create(Cursor::new(input));
+
+        loop {
+            // --- Prompt ---
+
+            print!("re[{}:0]> ", row);
+            io::stdout().flush().expect("Failed to flush stdout!");
+
+            // --- Reading Input ---
+
+            input.clear();
+            io::stdin()
+                .read_line(&mut input)
+                .expect("Failed to read_line() from stdin!");
+            row += 1;
+
+            // --- Compilation ---
+
+            #[allow(irrefutable_let_patterns)]
+            if let ref source = input
+            && !source.trim().is_empty() {
+                println!("Source: {}", source);
+            }
+            io::stdout().flush().expect("Failed to flush stdout!");
+        }
     }
 }

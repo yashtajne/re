@@ -1,4 +1,4 @@
-use std::fmt::format;
+use std::io::{BufRead, Seek};
 
 use crate::compiler::{Compiler, token::Token};
 
@@ -47,7 +47,7 @@ impl Expr {
 }
 
 
-impl Compiler {
+impl<R: BufRead + Seek> Compiler<R> {
     pub fn parse_expr(&mut self) -> Expr {
         if let Token::CloseRoundBracket{..} = self.current_token {
             let position = self.get_current_position();
@@ -57,6 +57,7 @@ impl Compiler {
             ));
         }
 
+        // expr inside brackets
         if let Token::OpenRoundBracket{..} = self.current_token {
             let opened_position = self.get_current_position();
 
@@ -71,6 +72,7 @@ impl Compiler {
             return expr;
         }
 
+        else // Symbolic expr
         if matches!(&self.current_token,
             Token::Plus{..} |
             Token::Minus{..}
@@ -90,14 +92,16 @@ impl Compiler {
             return Expr::Symbolic { symbol, operands };
         }
 
-        let expr = match &self.current_token {
-            Token::StringLiteral { value, .. } => Expr::StringLiteral(value.clone()),
-            Token::IntLiteral { value, .. } => Expr::IntLiteral(value.clone()),
-            Token::Identifier { value, .. } => Expr::Identifier(value.clone()),
-            _ => Expr::Invalid
-        };
+        else { // Leaf expr
+            let expr = match &self.current_token {
+                Token::StringLiteral{ value, .. } => Expr::StringLiteral(value.clone()),
+                Token::IntLiteral{ value, .. } => Expr::IntLiteral(value.clone()),
+                Token::Identifier{ value, .. } => Expr::Identifier(value.clone()),
+                _ => Expr::Invalid
+            };
 
-        self.next();
-        expr
+            self.next();
+            expr
+        }
     }
 }
