@@ -4,11 +4,12 @@ pub mod parser;
 pub mod errors;
 
 use crate::compiler::{parser::Expr, token::Token};
-use std::{fs::File, io::{self, BufRead, BufReader, Cursor, Read, Seek, Write}};
+use std::{fs::File, io::{self, BufRead, BufReader, Cursor, Write}};
 
 
-pub struct Compiler<R: BufRead + Read> {
+pub struct Compiler<R: BufRead> {
     file: R,
+    pos: usize,
     row: usize,
     bol: usize,
     peeked: Option<char>,
@@ -17,10 +18,10 @@ pub struct Compiler<R: BufRead + Read> {
 }
 
 
-impl<R: BufRead + Seek> Compiler<R> {
+impl<R: BufRead> Compiler<R> {
     pub fn create(file: R) -> Self {
         let mut compiler = Self{
-            row: 1, bol: 0,
+            pos: 0, row: 1, bol: 0,
             peeked: None,
             current_token: Token::Invalid{ row: 0, col: 0 },
             file: file, types: vec!["int".to_string()]
@@ -53,10 +54,10 @@ impl<R: BufRead + Seek> Compiler<R> {
     }
 
     pub fn get_current_position(&mut self) -> (usize, usize) {
-        let stream_position = self.file.stream_position()
-            .expect("Failed to get stream position!") as usize;
-
-        (self.row, stream_position - self.bol + 1)
+        // let stream_position = self.file.stream_position()
+        //     .expect("Failed to get stream position!") as usize;
+        // (self.row, stream_position - self.bol + 1)
+        (self.row, self.pos - self.bol + 1)
     }
 
     pub fn compile(&mut self) {
@@ -72,7 +73,6 @@ impl<R: BufRead + Seek> Compiler<R> {
     pub fn shell() {
         let mut input = String::new();
         let mut row = 0;
-        // let mut compiler = Compiler::create(Cursor::new(input));
 
         loop {
             // --- Prompt ---
@@ -94,6 +94,17 @@ impl<R: BufRead + Seek> Compiler<R> {
             if let ref source = input
             && !source.trim().is_empty() {
                 println!("Source: {}", source);
+                let mut compiler = Compiler::create(Cursor::new(source));
+
+                // println!("- - - - - [ Tokenization ] - - - - - -");
+                // while !matches!(compiler.current_token, Token::Eof{..}) {
+                //     compiler.current_token.print();
+                //     compiler.next();
+                // }
+                // println!();
+
+                println!("- - - - - [ Parsing ] - - - - - -");
+                compiler.compile();
             }
             io::stdout().flush().expect("Failed to flush stdout!");
         }

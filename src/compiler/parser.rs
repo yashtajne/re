@@ -1,4 +1,4 @@
-use std::io::{BufRead, Seek};
+use std::io::{BufRead};
 
 use crate::compiler::{Compiler, token::Token};
 
@@ -47,7 +47,7 @@ impl Expr {
 }
 
 
-impl<R: BufRead + Seek> Compiler<R> {
+impl<R: BufRead> Compiler<R> {
     pub fn parse_expr(&mut self) -> Expr {
         if let Token::CloseRoundBracket{..} = self.current_token {
             let position = self.get_current_position();

@@ -1,9 +1,9 @@
-use std::io::{BufRead, Seek};
+use std::io::{BufRead};
 use crate::compiler::token::{Token};
 use crate::compiler::Compiler;
 
 
-impl<R: BufRead + Seek> Compiler<R> {
+impl<R: BufRead> Compiler<R> {
     fn read_character(&mut self) -> Option<char> {
         let mut buffer = [0u8; 1];
 
@@ -11,10 +11,11 @@ impl<R: BufRead + Seek> Compiler<R> {
             Ok(()) => {
                 let character = buffer[0] as char;
 
+                self.pos += 1;
+
                 if character == '\n' {
                     self.row += 1;
-                    self.bol = self.file.stream_position()
-                        .expect("Failed to get stream position!") as usize;
+                    self.bol = self.pos;
                 }
 
                 Some(character)
